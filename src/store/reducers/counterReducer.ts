@@ -8,6 +8,8 @@ const initialState: CounterState = {
     value: 0
 }
 
+//ТЕСТОВЫЙ РЕДЬЮСЕР
+
 const counterSlice = createSlice({
     name: 'counter',
     initialState,
