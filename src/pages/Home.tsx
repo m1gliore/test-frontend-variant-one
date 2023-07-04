@@ -1,31 +1,39 @@
-import React, { useEffect, useState } from 'react';
-import { fetchRandomImage } from './apiCalls/BackgroundImage';
+import React, {useEffect, useState} from 'react';
+import {fetchRandomImage} from '../apiCalls/BackgroundImage';
 import styled from 'styled-components';
-import { TextField, Button } from '@mui/material';
+import {TextField, Button} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import {trends} from "./lib/Trends";
+import {trends} from "../lib/Trends";
 
 const Home: React.FC = () => {
-    const [previewImage, setPreviewImage] = useState<string>('')
-    const [photographer, setPhotographer] = useState<string>('')
-    const [photographerUrl, setPhotographerUrl] = useState<string>('')
-    const [searchQuery, setSearchQuery] = useState<string>('')
+    const [previewImage, setPreviewImage] = useState<string>('');
+    const [photographer, setPhotographer] = useState<string>('');
+    const [photographerUrl, setPhotographerUrl] = useState<string>('');
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [randomWords, setRandomWords] = useState<string[]>([]);
 
     const getRandomWords = (count: number | undefined) => {
         const shuffledWords = trends.sort(() => 0.5 - Math.random());
-        return shuffledWords.slice(0, count)
-    }
+        return shuffledWords.slice(0, count);
+    };
 
     useEffect(() => {
         (async () => {
-            const imageData = await fetchRandomImage()
+            const imageData = await fetchRandomImage();
             if (imageData) {
-                setPreviewImage(imageData.imageUrl)
-                setPhotographer(imageData.photographer)
-                setPhotographerUrl(imageData.photographerUrl)
+                setPreviewImage(imageData.imageUrl);
+                setPhotographer(imageData.photographer);
+                setPhotographerUrl(imageData.photographerUrl);
             }
-        })()
-    }, [])
+        })();
+    }, []);
+
+    useEffect(() => {
+        if (!searchQuery) {
+            const words = getRandomWords(7);
+            setRandomWords(words);
+        }
+    }, [searchQuery]);
 
     const handleSearch = () => {
         if (searchQuery) {
@@ -33,19 +41,17 @@ const Home: React.FC = () => {
             console.log('Выполняется поиск по запросу:', searchQuery);
             setSearchQuery('');
         }
-    }
+    };
 
     const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === 'Enter') {
             handleSearch();
         }
-    }
-
-    const randomWords = getRandomWords(7).join(', ')
+    };
 
     return (
         <Container>
-            {previewImage && <BackgroundImage src={previewImage} />}
+            {previewImage && <BackgroundImage src={previewImage}/>}
             <Content>
                 {photographer && (
                     <PhotographerLink href={photographerUrl} target="_blank" rel="noopener noreferrer">
@@ -59,9 +65,7 @@ const Home: React.FC = () => {
                         variant="outlined"
                         size="small"
                         value={searchQuery}
-                        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                            setSearchQuery(event.target.value)
-                        }
+                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(event.target.value)}
                         onKeyPress={handleKeyPress}
                         InputProps={{
                             sx: {
@@ -84,21 +88,28 @@ const Home: React.FC = () => {
                         }}
                     />
                     <SearchButton onClick={handleSearch}>
-                        <SearchIcon />
+                        <SearchIcon/>
                     </SearchButton>
                 </SearchContainer>
-                <RandomWords>{randomWords}</RandomWords>
+                <RandomWords>
+                    Тенденции: {randomWords.map((word, index) => (
+                    <React.Fragment key={index}>
+                        <WordLink
+                            href={`/search/${encodeURIComponent(word)}`}>{word}{index !== randomWords.length - 1 && ","}</WordLink>
+                    </React.Fragment>
+                ))}
+                </RandomWords>
             </Content>
         </Container>
-    )
-}
+    );
+};
 
 const Container = styled.div`
   position: relative;
   width: 100%;
   min-height: 100vh;
   max-height: fit-content;
-`
+`;
 
 const BackgroundImage = styled.img`
   position: absolute;
@@ -108,11 +119,11 @@ const BackgroundImage = styled.img`
   height: 60vh;
   opacity: 0.8;
   z-index: 1;
-`
+`;
 
 const Content = styled.div`
   z-index: 5;
-`
+`;
 
 const PhotographerLink = styled.a`
   position: absolute;
@@ -126,7 +137,7 @@ const PhotographerLink = styled.a`
   &:hover {
     opacity: 0.8;
   }
-`
+`;
 
 const Text = styled.h1`
   position: absolute;
@@ -137,7 +148,7 @@ const Text = styled.h1`
   left: 50%;
   transform: translate(-50%, -50%);
   color: #fff;
-`
+`;
 
 const SearchContainer = styled.div`
   position: absolute;
@@ -148,15 +159,15 @@ const SearchContainer = styled.div`
   align-items: center;
   justify-content: center;
   z-index: 10;
-`
+`;
 
 const StyledTextField = styled(TextField)`
   width: 25vw;
-`
+`;
 
 const SearchButton = styled(Button)`
   margin-left: 1vw;
-`
+`;
 
 const RandomWords = styled.span`
   position: absolute;
@@ -168,6 +179,18 @@ const RandomWords = styled.span`
   transform: translate(-50%, -50%);
   color: #fff;
   cursor: pointer;
-`
+  white-space: nowrap;
+`;
 
-export default Home
+const WordLink = styled.a`
+  margin-right: .5rem;
+  text-decoration: none;
+  color: #fff;
+  cursor: pointer;
+  
+  &:hover {
+    opacity: .5;
+  }
+`;
+
+export default Home;
