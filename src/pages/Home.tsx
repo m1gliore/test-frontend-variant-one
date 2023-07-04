@@ -1,9 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {fetchRandomImage} from '../apiCalls/Images';
+import {fetchRandomImage, fetchImages} from '../apiCalls/Images';
 import styled from 'styled-components';
-import {TextField, Button} from '@mui/material';
+import {IconButton, TextField, Button} from '@mui/material';
+import { CloudDownloadOutlined } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
 import {trends} from "../lib/Trends";
+import InfiniteScroll from 'react-infinite-scroll-component';
+import {ImageData} from "../types/ImageData";
 
 const Home: React.FC = () => {
     const [previewImage, setPreviewImage] = useState<string>('');
@@ -11,6 +14,8 @@ const Home: React.FC = () => {
     const [photographerUrl, setPhotographerUrl] = useState<string>('');
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [randomWords, setRandomWords] = useState<string[]>([]);
+    const [images, setImages] = useState<ImageData[]>([]);
+    const [page, setPage] = useState<number>(1);
 
     const getRandomWords = (count: number | undefined) => {
         const shuffledWords = trends.sort(() => 0.5 - Math.random());
@@ -35,6 +40,13 @@ const Home: React.FC = () => {
         }
     }, [searchQuery]);
 
+    useEffect(() => {
+        (async () => {
+            const fetchedImages = await fetchImages(page);
+            setImages((prevImages) => [...prevImages, ...fetchedImages]);
+        })();
+    }, [page]);
+
     const handleSearch = () => {
         if (searchQuery) {
             // Добавьте код для обработки поискового запроса
@@ -47,6 +59,19 @@ const Home: React.FC = () => {
         if (event.key === 'Enter') {
             handleSearch();
         }
+    };
+
+    const fetchMoreImages = () => {
+        setPage((prevPage) => prevPage + 1);
+    };
+
+    const handleDownload = (imageUrl: string) => {
+        const link = document.createElement('a');
+        link.href = imageUrl;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.setAttribute("download", "image.jpg");
+        link.click();
     };
 
     return (
@@ -100,6 +125,26 @@ const Home: React.FC = () => {
                 ))}
                 </RandomWords>
             </Content>
+            <ImageGridContainer>
+                <InfiniteScroll
+                    dataLength={images.length}
+                    next={fetchMoreImages}
+                    hasMore={true}
+                    loader={<Loader>Loading...</Loader>}
+                >
+                    {images.map((image, index) => (
+                        <ImageContainer key={index}>
+                            <Image src={image.imageUrl}/>
+                            <DownloadButton onClick={() => handleDownload(image.imageUrl)}>
+                                <CloudDownloadOutlined/>
+                            </DownloadButton>
+                            <AuthorLink href={image.photographerUrl} target="_blank" rel="noopener noreferrer">
+                                {image.photographer}
+                            </AuthorLink>
+                        </ImageContainer>
+                    ))}
+                </InfiniteScroll>
+            </ImageGridContainer>
         </Container>
     );
 };
@@ -145,7 +190,7 @@ const Text = styled.h1`
   z-index: 10;
   width: 25vw;
   top: 20%;
-  left: 50%;
+  left: 48%;
   transform: translate(-50%, -50%);
   color: #fff;
 `;
@@ -175,7 +220,7 @@ const RandomWords = styled.span`
   z-index: 10;
   width: 25vw;
   top: 40%;
-  left: 50%;
+  left: 48%;
   transform: translate(-50%, -50%);
   color: #fff;
   cursor: pointer;
@@ -187,9 +232,68 @@ const WordLink = styled.a`
   text-decoration: none;
   color: #fff;
   cursor: pointer;
-  
+
   &:hover {
     opacity: .5;
+  }
+`;
+
+const ImageGridContainer = styled.div`
+  position: absolute;
+  top: 65vh;
+  overflow-y: auto;
+`;
+
+const Loader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #888;
+`;
+
+const ImageContainer = styled.div`
+  position: relative;
+  display: flex;
+  justify-content: center;
+`;
+
+const Image = styled.img`
+  width: calc(100% / 3);
+  cursor: pointer;
+  margin-bottom: 1vw;
+
+  &:hover {
+    opacity: .8;
+  }
+`;
+
+const DownloadButton = styled.div`
+  position: absolute;
+  bottom: 0;
+  right: 33%;
+  padding: 1.5vw;
+  color: #fff;
+  z-index: 15;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
+const AuthorLink = styled.a`
+  position: absolute;
+  bottom: 0;
+  left: 33%;
+  padding: 1.5vw;
+  color: #fff;
+  text-decoration: none;
+  font-size: 1.2rem;
+  z-index: 2;
+
+  &:hover {
+    opacity: 0.8;
   }
 `;
 
