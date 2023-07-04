@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {fetchRandomImage, fetchImages} from '../apiCalls/Images';
 import styled from 'styled-components';
-import {IconButton, TextField, Button} from '@mui/material';
+import {TextField, Button} from '@mui/material';
 import { CloudDownloadOutlined } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
 import {trends} from "../lib/Trends";
