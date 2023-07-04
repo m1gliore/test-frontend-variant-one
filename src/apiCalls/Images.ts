@@ -51,3 +51,22 @@ export const fetchImages = async (page: number) => {
         return [];
     }
 };
+
+export const searchImages = async (query: string, page: number): Promise<ImageData[]> => {
+    try {
+        const response = await client.photos.search({ query, page, per_page: 20 });
+        if ('photos' in response) {
+            return response.photos.map((photo) => ({
+                imageUrl: photo.src.original,
+                photographer: photo.photographer,
+                photographerUrl: photo.photographer_url,
+            }));
+        } else {
+            console.log('Ошибка при получении изображений:', response);
+            return [];
+        }
+    } catch (error) {
+        console.error('Ошибка при получении изображений:', error);
+        return [];
+    }
+};
