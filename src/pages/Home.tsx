@@ -7,6 +7,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import {trends} from "../lib/Trends";
 import InfiniteScroll from 'react-infinite-scroll-component';
 import {ImageData} from "../types/ImageData";
+import {useNavigate} from "react-router-dom";
 
 const Home: React.FC = () => {
     const [previewImage, setPreviewImage] = useState<string>('');
@@ -16,6 +17,7 @@ const Home: React.FC = () => {
     const [randomWords, setRandomWords] = useState<string[]>([]);
     const [images, setImages] = useState<ImageData[]>([]);
     const [page, setPage] = useState<number>(1);
+    const navigate = useNavigate()
 
     const getRandomWords = (count: number | undefined) => {
         const shuffledWords = trends.sort(() => 0.5 - Math.random());
@@ -49,8 +51,8 @@ const Home: React.FC = () => {
 
     const handleSearch = () => {
         if (searchQuery) {
-            // Добавьте код для обработки поискового запроса
-            console.log('Выполняется поиск по запросу:', searchQuery);
+            const encodedQuery = encodeURIComponent(searchQuery);
+            navigate(`/search/${encodedQuery}`);
             setSearchQuery('');
         }
     };
@@ -196,7 +198,7 @@ const Text = styled.h1`
 `;
 
 const SearchContainer = styled.div`
-  position: absolute;
+  position: fixed;
   top: 35%;
   left: 50%;
   transform: translate(-50%, -50%);
