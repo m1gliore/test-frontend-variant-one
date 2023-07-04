@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {fetchRandomImage} from '../apiCalls/BackgroundImage';
+import {fetchRandomImage} from '../apiCalls/Images';
 import styled from 'styled-components';
 import {TextField, Button} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
